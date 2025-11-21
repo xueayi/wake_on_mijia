@@ -4,6 +4,7 @@ import threading
 import time
 import os
 import configparser
+import shutil
 import subprocess
 
 
@@ -18,6 +19,7 @@ TOPIC = cfg.get("topic", "name")
 MAC_ADDR = cfg.get("device", "mac")
 IP_ADDR = cfg.get("device", "ip")
 USERNAME = cfg.get("device", "user")
+PASSWORD = cfg.get("device", "password")
 
 tcp_client_socket = None
 socket_lock = threading.Lock()
@@ -56,12 +58,24 @@ def wol(mac):
     log(f"[WOL] 已发送魔术包到 {mac}")
 
 # ---------  ssh shutdown 功能 ------------
-def shutdown_windows(ip, user):
+def shutdown_windows(ip, user,pwd):
     try:
-        subprocess.run(
-            ["ssh", "-o", "StrictHostKeyChecking=no", f"{user}@{ip}", "shutdown /s /t 0"],
-            timeout=5
-        )
+        if shutil.which("sshpass") and pwd:
+            cmd = [
+                "sshpass", "-p", pwd, "ssh",
+                "-o", "StrictHostKeyChecking=no",
+                "-o", "PreferredAuthentications=password",
+                f"{user}@{ip}",
+                "shutdown /s /t 0"
+            ]
+        else:
+            cmd = [
+                "ssh",
+                "-o", "StrictHostKeyChecking=no",
+                f"{user}@{ip}",
+                "shutdown /s /t 0"
+            ]
+        subprocess.run(cmd, timeout=5)
         print("[OK] Shutdown command sent.")
     except Exception as e:
         print("[ERR]", e)
@@ -134,7 +148,7 @@ def recv_thread():
             # 触发 远程关机
             if f"topic={TOPIC}&msg=off" in msg:
                 log("[ACTION] 收到 远程关机 指令，建立SSH连接...")
-                shutdown_windows(IP_ADDR, USERNAME)
+                shutdown_windows(IP_ADDR, USERNAME, PASSWORD)
 
         except ConnectionResetError:
             log("[ERR] 连接被远端重置，重新连接...")

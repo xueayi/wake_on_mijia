@@ -48,7 +48,7 @@
 4. 远程关机配置（如不需要设置关机可以跳过）
 
    - 在 Windows 启用 OpenSSH Server，使 Linux 主机可通过 SSH 执行关机命令。
-   - 进入 “设置 → 应用 → 可选功能 → 添加功能”，安装 **OpenSSH Server**。
+   - 进入 “设置 → 系统 → 可选功能 → 添加功能”，安装 **OpenSSH Server**。
    - 管理员 PowerShell 启动并设置自启：
 
    ```powershell

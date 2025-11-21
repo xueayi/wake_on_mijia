@@ -92,4 +92,5 @@ EOF
   "$INIT_PATH" restart
   echo "已使用 init 安装并启动 wom"
   ps | grep wom
+  "$INIT_PATH" status
 fi
